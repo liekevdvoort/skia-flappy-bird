@@ -37,10 +37,14 @@ const PIPE_GAP = 320;
 
 const HelloWorld = () => {
   const { width, height } = useWindowDimensions();
-  const pipeOffset = 0;
+  const pipeOffset = useSharedValue(0);
   const birdPosition = {
     x: width / 4,
   };
+  const topPipeY = useDerivedValue(() => pipeOffset.value - PIPE_GAP);
+  const bottomPipeY = useDerivedValue(
+    () => height - PIPE_GAP + pipeOffset.value,
+  );
 
   const bg = useImage(require("../assets/sprites/background-day.png"));
   const bird = useImage(require("../assets/sprites/yellowbird-upflap.png"));
@@ -67,14 +71,14 @@ const HelloWorld = () => {
     // add Top pipe
     allObstacles.push({
       x: pipeX.value,
-      y: pipeOffset - PIPE_GAP,
+      y: pipeOffset.value - PIPE_GAP,
       height: PIPE_HEIGHT,
       width: PIPE_WIDTH,
     });
     // add Bottom pipe
     allObstacles.push({
       x: pipeX.value,
-      y: height - PIPE_GAP + pipeOffset,
+      y: height - PIPE_GAP + pipeOffset.value,
       height: PIPE_HEIGHT,
       width: PIPE_WIDTH,
     });
@@ -143,6 +147,10 @@ const HelloWorld = () => {
     },
     (currentValue, previousValue) => {
       const threshold = birdPosition.x;
+
+      if (previousValue && currentValue < -100 && previousValue > -100) {
+        pipeOffset.value = Math.random() * 400 - 200;
+      }
       if (!previousValue) return;
       if (
         currentValue !== previousValue &&
@@ -221,7 +229,7 @@ const HelloWorld = () => {
           <Image
             image={pipeTop}
             fit={"contain"}
-            y={pipeOffset - PIPE_GAP}
+            y={topPipeY}
             x={pipeX}
             width={PIPE_WIDTH}
             height={PIPE_HEIGHT}
@@ -229,7 +237,7 @@ const HelloWorld = () => {
           <Image
             image={pipeBottom}
             fit={"contain"}
-            y={height - PIPE_GAP + pipeOffset}
+            y={bottomPipeY}
             x={pipeX}
             width={PIPE_WIDTH}
             height={PIPE_HEIGHT}
